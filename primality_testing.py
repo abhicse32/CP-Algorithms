@@ -47,8 +47,13 @@ def fermat_test(n, k):
     
     Fermat's Little Theorem states that an integer p is a prime if for all coprime integers a, a^(p-1) = 1 (mod p). Since p
     is an odd prime, we can write p - 1 = 2^(s)*d, where d is an odd integer. So """
-def miller_rabin(n):
-   pass 
+def miller_rabin_test(n):
+    if n == 2: return True
+    if n < 2 or not (n & 1): return False
+    s, k = 0, n - 1
+    while not (k & 1):
+        s, k = s+1, k//2
+
 
 if __name__ == '__main__':
     while True:
