@@ -10,32 +10,26 @@ using namespace std;
 #define pii pair<ll,ll>
 #define ll long long
 
-ll gcd(ll a, ll m, ll &x, ll &y){
-    if(!(a % m))
-        return m;
-    ll tmp_x = 0, tmp_y = 0;
-    ll gc = gcd(m, a % m, tmp_x, tmp_y);
-    x = 1, y = -(a/m);
-    if(tmp_x && tmp_y)
-        x = x * tmp_y, y = tmp_x + y * tmp_y;
+/*
+ * bezout's identity is: ax + my = gcd(a, m). the cofficients x and y can be found working the 
+ * euclidean gcd backwards and the same can be computed whlie keeping track of coefficients in each
+ * step of the recursive implementation.
+ * Since next step of the gcd(a, m)  is gcd(m, a%m) which means gcd(a, m) = gcd(m, a % m) = a * x + m * y
+ * Let's suppose coefficients for gcd(m, a % m) are x1 and y1, then using Bezout's identity, we can write-
+ * m * x1 + (a % m) * y1 = gcd(m, a % m) = gcd(a, m) = a*x + m*y
+ *  => m*x1 +(a - m*(a/m)) * y1 = a*x + m*y 
+ *  => a*y1 + m*(x1 - (a/m)*y1) = a*x + m*y
+ *  => x = y1 and y = x1 - (a/m)
+ * */
+ll extended_euclidean(ll a, ll m, ll &x, ll &y){
+    if(!m){
+        x = 1, y= 0;
+        return a;
+    }
+    ll tmp_x, tmp_y;
+    ll gc = extended_euclidean(m, a % m, tmp_x, tmp_y);
+    x = tmp_y, y = tmp_x - (a/m) * tmp_y;
     return gc;
-}
-
-ll extended_euclidean(ll a, ll m, ll& x, ll& y){
-    /*
-     * returns the value of gcd(a, m) and sets x and y to the coefficients of 'a' and 'm'
-     * in the Bezout's identity a*x + m*y = gcd(a, m)
-     * */
-    if(a > m){
-        if(!(a % m))
-            x = 1, y = -(a / m - 1);
-        return gcd(a, m, x, y);
-    }
-    else{
-        if(!(m % a))
-            y = 1, x = -(m / a - 1);
-        return gcd(m, a, y, x);
-    }
 }
 
 void modular_inverse(ll a, ll m){
@@ -51,7 +45,9 @@ void modular_inverse(ll a, ll m){
 
 int main(){
     ll a, m;
-    cin >> a >> m;
-    modular_inverse(a, m);
+    while(1){
+        cin >> a >> m;
+        modular_inverse(a, m);
+    }
     return 0;
 }
