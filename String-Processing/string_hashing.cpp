@@ -9,45 +9,44 @@ using namespace std;
 #define qi queue<int>
 #define pii pair<int,int>
 #define ll long long
+#define p 1000000007
 
-long long compute_hash(string const &s){
-    const int m = 1e9 + 7;
-    const int p = 103;   // some random prime
-    long long hash_val=0, pow_pi =1;
-    for(auto c: s){
-        hash_val = (hash_val + (c - 'a'+ 1)*pow_pi) % m;
-        pow_pi = (pow_pi* p)% m;
-    }
-    return hash_val;
+ll get_hash(string& str){
+   ll hash = 0, prime_pow = 1;            // assuming that the size of the alphabet is 128, we choose the prime 131 to raise the power of
+   int n = str.size(), m = 131;
+   for(int i=0;i < n; ++i){
+       hash = (hash + str[i] * prime_pow) % p;
+       prime_pow = (prime_pow * m) % p;
+   }
+   return hash;
 }
 
-int count_unique_substrings(string const &str){
+int count_unique_substrings(string& str){
+    ll hash = 0, prime_pow = 1, m = 131;
     int n = str.size();
-    int mod = 1e9 + 9;
-    int p = 53;
-    vector<long long> pi_mod(n);
-    pi_mod[0] = 1;
-    for(int i=1;i<n;++i)
-        pi_mod[i] = (pi_mod[i-1]* p) % mod;
+    vector<ll> prime_powers(n, 0);
+    vector<ll> str_hashes(n+1, 0);
+    prime_powers[0] = 1;
+    for(int i=1; i< n; ++i) prime_powers[i] = ( prime_powers[i-1] * m ) % p;
+    // first compute the string hash
+    for(int i=0; i< n;++i)
+        str_hashes[i+1] = (str_hashes[i] + str[i] * prime_powers[i]) % p;
 
-    vector<long long> prefix_hash(n+1, 0);
-    for(int i=0; i< n; ++i)
-       prefix_hash[i+1] = (prefix_hash[i] + (str[i] - 'a' + 1)* pi_mod[i]) % mod;
-
-    int unique_count = 0;
-    for(int l=1; l<= n; ++l){
-        set<long long> unique_hashes;
-        for(int i=0; i<=n-l; ++i){
-            long long curr_hash = (prefix_hash[i+l] - prefix_hash[i] + mod) %mod;
-            curr_hash = (curr_hash * pi_mod[n-i-1]) % mod;
-            unique_hashes.insert(curr_hash);
+    int count = 0;
+    // we try to find out the unique substrings of each size
+    for(int l=1; l<=n; ++l){
+        set<ll> unique_hashes;
+        for(int i=0; i <= n - l; ++i){
+            ll sub_str_hash = (str_hashes[i+l] - str_hashes[i] + p) % p;
+            sub_str_hash = (sub_str_hash * prime_powers[n-i-1]) % p;
+            unique_hashes.insert(sub_str_hash);
         }
-        unique_count += unique_hashes.size();
+        count += unique_hashes.size();
     }
-    return unique_count;
+    return count;
 }
+
 int main(){
-    string str;
-    cin >> str;
-    cout << count_unique_substrings(str) << endl;
+    string str = "aaaaa";
+   cout << count_unique_substrings(str) <<endl;
 }

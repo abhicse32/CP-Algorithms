@@ -9,39 +9,41 @@ using namespace std;
 #define qi queue<int>
 #define pii pair<int,int>
 #define ll long long
+#define p 1000000007
+
+// returns the index of occurrence of a pattern in a string
 
 
-vector<int> print_occurence_index(string const &text, string const &pattern){
-    int t_size = text.size(), p_size = pattern.size();
-    vector<int> result;
-    if(t_size < p_size) return result;
-    int mod = 1e9 + 9;
-    int p = 53;
-    vector<long long> pi_mod(t_size);
-    pi_mod[0] = 1;
-    for(int i=1;i<t_size;++i)
-        pi_mod[i] = (pi_mod[i-1]* p) % mod;
-    
-    vector<long long> text_hash(t_size+1, 0);
-    for(int i=0;i<t_size; ++i)
-       text_hash[i+1] = (text_hash[i] + (text[i] - 'a' + 1) * pi_mod[i] ) % mod;
-
-    long long p_hash = 0;
-    for(int i=0;i < p_size ; ++i)
-        p_hash = (p_hash + (pattern[i]- 'a' + 1) * pi_mod[i] ) % mod;
-
-    for(int i=0;i + p_size - 1 < t_size; ++i){
-        long long sub_hash = (text_hash[i + p_size] - text_hash[i] + mod) % mod;
-        if(sub_hash == (p_hash * pi_mod[i]) % mod) 
-            result.push_back(i);
+vi get_occurences(string& txt, string& pattern){
+    int txt_size = txt.size(), pat_size = pattern.size();
+    vi occurence_indices;
+    if(txt_size >= pat_size){ 
+        vector<ll> prime_powers(txt_size, 0);
+        prime_powers[0] = 1;
+        ll m = 131;
+        for(int i=1;i < txt_size; ++i) 
+            prime_powers[i] = (prime_powers[i-1] * m) % p;
+        // computes txt hashes
+        vector<ll> txt_hashes(txt_size + 1, 0);
+        for(int i=0;i < txt_size; ++i)  
+            txt_hashes[i + 1] = (txt_hashes[i] + prime_powers[i] * txt[i]) % p;
+        ll pattern_hash = 0;
+        for(int i = 0; i < pat_size; ++i)
+            pattern_hash = (pattern_hash + prime_powers[i] * pattern[i]) % p;
+        
+        for(int i=0;i <= txt_size - pat_size; ++i){
+           ll curr_hash = (txt_hashes[i + pat_size] - txt_hashes[i] + p) % p;
+           if(curr_hash == pattern_hash * prime_powers[i] % p)
+               occurence_indices.push_back(i);
+        }
     }
-    return result;
+    return occurence_indices;   
 }
 
 int main(){
-    string pattern, text;
-    cin >> text >> pattern;
-    vector<int> result =  print_occurence_index(text, pattern); 
-    for(auto v: result) cout << v <<" ";
-    cout <<endl;
+    string txt = "pattern inside a text is pattern";
+    string pattern = "pattern";
+    vi occr_indices = get_occurences(txt, pattern);
+    for(auto v: occr_indices) cout << v <<" ";
+    cout << endl;
 }
